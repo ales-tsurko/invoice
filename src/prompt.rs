@@ -2,7 +2,7 @@ use anyhow::Result as Anyhow;
 use chrono::{Datelike, Local, NaiveDate};
 use inquire::{validator::Validation, CustomType, DateSelect, Select};
 
-use crate::config::{Account, Supplier, Config, Customer};
+use crate::config::{Account, Config, Customer, Supplier};
 
 // Prompt
 #[derive(Debug)]
@@ -54,13 +54,13 @@ impl Prompt {
 
     fn ask_issue_date(today: &NaiveDate) -> Anyhow<NaiveDate> {
         Ok(DateSelect::new("Please, provide the invoice issue date.")
-            .with_default(today.clone())
+            .with_default(*today)
             .with_week_start(chrono::Weekday::Mon)
             .prompt()?)
     }
 
     fn ask_service_date(today: &NaiveDate) -> Anyhow<NaiveDate> {
-        let last_day = NaiveDate::from_ymd_opt(today.year(), today.month() + 1, 1)
+        let last_day = NaiveDate::from_ymd_opt(today.year(), (today.month() + 1).min(12), 1)
             .expect("Error getting last day")
             - chrono::Days::new(1);
         Ok(DateSelect::new("Please, provide the service date.")
@@ -71,7 +71,7 @@ impl Prompt {
     }
 
     fn ask_due_date(today: &NaiveDate) -> Anyhow<NaiveDate> {
-        let due_date = NaiveDate::from_ymd_opt(today.year(), today.month() + 1, 5)
+        let due_date = NaiveDate::from_ymd_opt(today.year(), (today.month() + 1).min(12), 5)
             .expect("Error getting next month");
         Ok(DateSelect::new("Please, provide the due date.")
             .with_default(due_date)
